@@ -749,7 +749,6 @@ void rxLoraModem()
 
 // ----------------------------------------------------------------------------
 // function cadScanner()
-//
 // CAD Scanner will scan on the given channel for a valid Symbol/Preamble signal.
 // So instead of receiving continuous on a given channel/sf combination
 // we will wait on the given channel and scan for a preamble. Once received

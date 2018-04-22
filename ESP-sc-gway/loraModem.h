@@ -72,8 +72,8 @@ int freqs [] = {
 	869525000									// Channel 9, 869.5 MHz for responses gateway (10%)
 	// TTN defines an additional channel at 869.525Mhz using SF9 for class B. Not used
 };
-uint32_t  freq = freqs[0];
-uint8_t	 ifreq = 0;								// Channel Index
+uint32_t  freq = freqs[1];
+uint8_t	 ifreq = 1;								// Channel Index
 
 
 
@@ -134,6 +134,15 @@ struct pins {
 	uint8_t dio2=26;		// GPI26 / Used for frequency hopping, don't care
 	uint8_t ss=18;		// GPIO18 / Dx. Select pin connected to GPIO18
 	uint8_t rst=14;		// GPIO0 / D3. Reset pin not used	
+} pins;
+#elif _PIN_OUT==4
+// Custom Pin Setting, The GPIO0 (D3) sould remain un-used as
+struct pins {
+  uint8_t dio0=5;   // GPIO5 / D1. Dio0 used for one frequency and one SF
+  uint8_t dio1=4;   // GPIO4 / D2. Used for CAD, may or not be shared with DIO0
+  uint8_t dio2=2;   // GPIO2 / D4. Used for frequency hopping, don't care
+  uint8_t ss=15;    // GPIO15 / D8. Select pin connected to GPIO15
+  uint8_t rst=0;    // GPIO0 / D3. Reset pin not used 
 } pins;
 #else
 	// Use your own pin definitions, and comment #error line below

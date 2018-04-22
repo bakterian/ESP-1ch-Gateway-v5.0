@@ -45,7 +45,7 @@
 // This parameters contains the default value of SF, the actual version can be set with
 // the webserver and it will be stored in SPIFF
 // NOTE: The frequency is set in the loraModem.h file and is default 868.100000 MHz.
-#define _SPREADING SF9
+#define _SPREADING SF7
 
 // Channel Activity Detection
 // This function will scan for valid LoRa headers and determine the Spreading 
@@ -54,7 +54,7 @@
 // continuous listen mode.
 // Using this function means that we HAVE to use more dio pins on the RFM95/sx1276
 // device and also connect enable dio1 to detect this state. 
-#define _CAD 1
+#define _CAD 0
 
 // Definitions for the admin webserver.
 // A_SERVER determines whether or not the admin webpage is included in the sketch.
@@ -69,7 +69,7 @@
 // Bonjour is included in iTunes (which is free) and OTA is recommended to install 
 // the firmware on your router witout having to be really close to the gateway and 
 // connect with USB.
-#define A_OTA 1
+#define A_OTA 0
 
 // We support two pin-out configurations out-of-the-box: HALLARD and COMPRESULT.
 // If you use one of these two, just set the parameter to the right value.
@@ -77,8 +77,8 @@
 //	1: HALLARD
 //	2: COMRESULT pin out
 //	3: ESP32 pin out
-//	4: Other, define your own in loraModem.h
-#define _PIN_OUT 1
+//	4: ESP8266 Custom pin connection
+#define _PIN_OUT 4
 
 // Gather statistics on sensor and Wifi status
 // 0= No statistics
@@ -100,7 +100,7 @@
 // NOTE: If your node has only one frequency enabled and one SF, you must set this to 1
 //		in order to receive downlink messages
 // NOTE: In all other cases, value 0 works for most gateways with CAD enabled
-#define _STRICT_1CH	0
+#define _STRICT_1CH	1
 
 // Allows configuration through WifiManager AP setup. Must be 0 or 1					
 #define WIFIMANAGER 0
@@ -133,7 +133,7 @@
 // OLED==0; No OLED display connected
 // OLED==1; 0.9 Oled Screen based on SSD1306
 // OLED==2;	1"3 Oled screens for Wemos, 128x64 SH1106
-#define OLED 2
+#define OLED 0
 
 
 // Define whether we want to manage the gateway over UDP (next to management 
@@ -186,7 +186,7 @@
 
 // Gateway Ident definitions
 #define _DESCRIPTION "ESP Gateway"
-#define _EMAIL "mw12554@hotmail.com"
+#define _EMAIL "bakterian@protonamil.com"
 #define _PLATFORM "ESP8266"
 #define _LAT 52
 #define _LON 5.9
@@ -199,9 +199,9 @@
 #define NTP_INTR 0							// Do NTP processing with interrupts or in loop();
 
 #if GATEWAYNODE==1
-#define _DEVADDR { 0x26, 0x01, 0x00, 0x00 }
-#define _APPSKEY { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 }
-#define _NWKSKEY { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 }
+#define _DEVADDR { 0x26, 0x01, 0x16, 0xC8 }
+#define _APPSKEY { 0x3A, 0x65, 0x2E, 0xFC, 0x44, 0x54, 0x1F, 0x4D, 0xB3, 0x7D, 0x6E, 0xF6, 0xAD, 0x71, 0x7D, 0x42 }
+#define _NWKSKEY { 0x80, 0xE0, 0xEB, 0x98, 0xF7, 0x95, 0xB8, 0x63, 0xE9, 0x91, 0x8E, 0x1D, 0xE5, 0x62, 0x95, 0xC4 }
 #define _SENSOR_INTERVAL 300
 #endif
 
@@ -229,9 +229,9 @@ struct wpas {
 //	the first line in te struct is reserved for WifiManager.
 //
 wpas wpa[] = {
-	{ "" , "" },							// Reserved for WiFi Manager
-	{ "aap", "noot" },
-	{ "mies", "teun" }
+  { "" , "" },              // Reserved for WiFi Manager
+  { "Zita2.4GHz", "bakterian86" },
+  { "mies", "teun" }
 };
 
 // For asserting and testing the following defines are used.
