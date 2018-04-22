@@ -24,8 +24,14 @@
 
 void init_oLED() 
 {
-	// Initialising the UI will init the display too.
-	display.init();
+// Initialising the UI will init the display too.
+#ifdef ESP32BUILD
+  pinMode(16,OUTPUT);
+  digitalWrite(16, LOW);    // set GPIO16 low to reset OLED
+  delay(50);
+  digitalWrite(16, HIGH); // while OLED is running, must set GPIO16 in high、
+#endif
+  display.init();
 	display.flipScreenVertically();
 	display.setFont(ArialMT_Plain_24);
 	display.setTextAlignment(TEXT_ALIGN_LEFT);

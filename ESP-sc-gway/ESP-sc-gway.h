@@ -19,13 +19,23 @@
 //
 // ----------------------------------------------------------------------------------------
 
-#define VERSION "V.5.0.9.H; 180416a"
+
+// For Heltec ESP32 based WIFI_LoRa_32 boards (and may-be others as well)
+// REMOVE for ESP8266 builds
+#define ESP32BUILD  1
+
+#ifdef ESP32BUILD
+#define VERSION "V.5.0.9.H+; 180416a nOLED, 15/10"
+#else
+#define VERSION "V.5.0.9.H; 180416a nOLED, 15/10"
+#endif
+
 
 // This value of DEBUG determines whether some parts of code get compiled.
 // Also this is the initial value of debug parameter. 
 // The value can be changed using the admin webserver
 // For operational use, set initial DEBUG vaulue 0
-#define DEBUG 0
+#define DEBUG 1
 
 // Debug message will be put on Serial is this one is set.
 // If set to 0, not USB Serial prints are done
@@ -59,7 +69,7 @@
 // Definitions for the admin webserver.
 // A_SERVER determines whether or not the admin webpage is included in the sketch.
 // Normally, leave it in!
-#define A_SERVER 1				// Define local WebServer only if this define is set
+#define A_SERVER 1        // Define local WebServer only if this define is set
 #define A_REFRESH 1				// Will the webserver refresh or not?
 #define A_SERVERPORT 80			// local webserver port
 #define A_MAXBUFSIZE 192		// Must be larger than 128, but small enough to work
@@ -69,16 +79,22 @@
 // Bonjour is included in iTunes (which is free) and OTA is recommended to install 
 // the firmware on your router witout having to be really close to the gateway and 
 // connect with USB.
+
+#ifdef ESP32BUILD
+// Not available (yet) for ESP32
 #define A_OTA 0
+#else
+#define A_OTA 0
+#endif
 
 // We support two pin-out configurations out-of-the-box: HALLARD and COMPRESULT.
 // If you use one of these two, just set the parameter to the right value.
 // If your pin definitions are different, update the loraModem.h file to reflect these settings.
 //	1: HALLARD
 //	2: COMRESULT pin out
-//	3: ESP32 pin out
-//	4: ESP8266 Custom pin connection
-#define _PIN_OUT 4
+//	3: For Heltec ESP32 based WIFI_LoRa_32 board
+//  4: Other, define your own in loraModem.h
+#define _PIN_OUT 3
 
 // Gather statistics on sensor and Wifi status
 // 0= No statistics
@@ -103,12 +119,21 @@
 #define _STRICT_1CH	1
 
 // Allows configuration through WifiManager AP setup. Must be 0 or 1					
+#ifdef ESP32BUILD
+// Not available (yet) for ESP32
 #define WIFIMANAGER 0
+#else
+#define WIFIMANAGER 0
+#endif
 
 // Define the name of the accesspoint if the gateway is in accesspoint mode (is
 // getting WiFi SSID and password using WiFiManager)
+#ifdef ESP32BUILD
+#define AP_NAME "ESP32-Gway-Things4U"
+#else
 #define AP_NAME "ESP8266-Gway-Things4U"
-#define AP_PASSWD "ttnAutoPw"
+#endif
+#define AP_PASSWD "MyPw01!"
 							
 
 // Defines whether the gateway will also report sensor/status value on MQTT
@@ -133,7 +158,7 @@
 // OLED==0; No OLED display connected
 // OLED==1; 0.9 Oled Screen based on SSD1306
 // OLED==2;	1"3 Oled screens for Wemos, 128x64 SH1106
-#define OLED 0
+#define OLED 1
 
 
 // Define whether we want to manage the gateway over UDP (next to management 
@@ -185,16 +210,16 @@
 #define _THINGSERVER "westenberg.org"		// Server URL of the LoRa-udp.js handler
 
 // Gateway Ident definitions
-#define _DESCRIPTION "ESP Gateway"
+#define _DESCRIPTION "Haltec ESP32 Gateway"
 #define _EMAIL "bakterian@protonamil.com"
-#define _PLATFORM "ESP8266"
-#define _LAT 52
-#define _LON 5.9
-#define _ALT 1
+#define _PLATFORM "ESP32"
+#define _LAT 51.744
+#define _LON 19.45
+#define _ALT 120
 
 // ntp
-#define NTP_TIMESERVER "nl.pool.ntp.org"	// Country and region specific
-#define NTP_TIMEZONES	1					// How far is our Timezone from UTC (excl daylight saving/summer time)
+#define NTP_TIMESERVER "pl.pool.ntp.org"	// Country and region specific
+#define NTP_TIMEZONES	2					// How far is our Timezone from UTC (excl daylight saving/summer time)
 #define SECS_IN_HOUR	3600
 #define NTP_INTR 0							// Do NTP processing with interrupts or in loop();
 
@@ -212,6 +237,7 @@
 // Serial Port speed
 #define _BAUDRATE 115200					// Works for debug messages to serial momitor
 
+
 // Wifi definitions
 // WPA is an array with SSID and password records. Set WPA size to number of entries in array
 // When using the WiFiManager, we will overwrite the first entry with the 
@@ -228,11 +254,16 @@ struct wpas {
 // Note: DO NOT use the first and the last line of the stucture, these should be empty strings and
 //	the first line in te struct is reserved for WifiManager.
 //
+#if 0
 wpas wpa[] = {
   { "" , "" },              // Reserved for WiFi Manager
-  { "Zita2.4GHz", "bakterian86" },
+  { "mies", "teun" },
   { "mies", "teun" }
 };
+#else
+// Place outside version control to avoid the risk of commiting it to github ;-)
+#include "D:\7_ARDUINO_SKETCHES\0_ESP32WiFiCredentials\wpa.h"
+#endif
 
 // For asserting and testing the following defines are used.
 //
