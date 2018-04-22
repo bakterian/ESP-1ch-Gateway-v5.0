@@ -28,20 +28,25 @@
 
 #if OLED>=1
 
+#if ESP32BUILD
+#define OLED_SCL 15              // GPIO5 / D1
+#define OLED_SDA 4              // GPIO4 / D2
+#else
 #define OLED_SCL 5								// GPIO5 / D1
 #define OLED_SDA 4								// GPIO4 / D2
+#endif
+
+#define OLED_ADDR 0x3C            // Default 0x3C for 0.9", for 1.3" it is 0x78
 
 #if OLED==1
 #include "SSD1306.h"
-#define OLED_ADDR 0x3C							// Default 0x3C for 0.9", for 1.3" it is 0x78
-SSD1306  display(OLED_ADDR, OLED_SDA, OLED_SCL);// i2c ADDR & SDA, SCL on wemos
 #endif
 
 // This is an 1.3" OLED display which is runnint on I2C
 #if OLED==2
 #include "SH1106.h"
-#define OLED_ADDR 0x3C							// Default 0x3C for 1.3" SH1106
-SH1106  display(OLED_ADDR, OLED_SDA, OLED_SCL);	// i2c ADDR & SDA, SCL on wemos
 #endif
+
+SSD1306  display(OLED_ADDR, OLED_SDA, OLED_SCL);// i2c ADDR & SDA, SCL on wemos
 
 #endif//OLED>=1

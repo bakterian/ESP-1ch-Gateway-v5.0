@@ -12,6 +12,8 @@ without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
 
 Maintained by Maarten Westenberg (mw12554@hotmail.com)
 
+Changes for ESP32 by Jac Kersing, don't blame Maarten...
+See the note at the end for what (should) work.
 
 # Description
 
@@ -373,10 +375,21 @@ The following things are still on my wish list to make to the single channel gat
 
 - Receive downstream message with commands from the server. These can be used to configure
   the gateway through downlink messages (such as setting the SF)
-- Support for ESP32 and RFM95 on 915 MHz
+- Support for ESP32 (partially done, see below) and RFM95 on 915 MHz
 - Use the SPIFFS for storing .css files
 - Use the SPIFFS for storing node data (for later analysis)
 
+
+# ESP32 Specifics
+
+Not all features are supported for ESP32 (yet). Missing are:
+- OTA
+- WiFiManager
+- GATEWAYMGT (manage gateway over UDP)
+
+Untested features:
+- GATEWAYNODE : use gateway as sensor node
+- REPEATER
 
 
 # License

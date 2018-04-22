@@ -43,17 +43,23 @@
 
 #include <SPI.h>
 #include <TimeLib.h>							// http://playground.arduino.cc/code/time
-#include <DNSServer.h>							// Local DNSserver
 #include <ArduinoJson.h>
-//#include <SimpleTimer.h>
 
-#include <ESP8266WiFi.h>						// Which is specific for ESP8266
-						
+#ifdef ESP32BUILD
+#include "esp_wifi.h"
+#include "WiFi.h"
+#include "SPIFFS.h"
+#else
+#include <ESP8266WiFi.h>
+#include <DNSServer.h> 							// Local DNSserver
+#endif
+
 #include "FS.h"
 #include <WiFiUdp.h>
 #include <pins_arduino.h>
 
 #include <gBase64.h>							// https://github.com/adamvr/arduino-base64 (changed the name)
+#ifndef ESP32BUILD
 #include <ESP8266mDNS.h>
 
 extern "C" {
@@ -62,6 +68,7 @@ extern "C" {
 #include "lwip/dns.h"
 #include "c_types.h"
 }
+#endif
 
 #if MUTEX_LIB==1
 #include <mutex.h>								// See lib directory
@@ -90,14 +97,19 @@ extern "C" {
 #include "AES-128_V10.h"
 #endif
 
-
-
 int debug=1;									// Debug level! 0 is no msgs, 1 normal, 2 extensive
 
 // You can switch webserver off if not necessary but probably better to leave it in.
 #if A_SERVER==1
+#ifdef ESP32BUILD
+#include <WiFiClient.h>
+#include <WebServer.h>
+#include <ESPmDNS.h>
+WebServer server(A_SERVERPORT);
+#else
 #include <Streaming.h>          				// http://arduiniana.org/libraries/streaming/
   ESP8266WebServer server(A_SERVERPORT);
+#endif
 #endif
 using namespace std;
 
@@ -826,7 +838,11 @@ int readUdp(int packetSize)
 #endif
 			// Only send the PKT_PULL_ACK to the UDP socket that just sent the data!!!
 			Udp.beginPacket(remoteIpNo, remotePortNo);
-			if (Udp.write((char *)buff, 12) != 12) {
+#ifdef ESP32BUILD
+			if (Udp.write(buff, 12) != 12) {
+#else
+      if (Udp.write((char *)buff, 12) != 12) {
+#endif
 #if DUSB>=1
 				if (debug>=0)
 					Serial.println("PKT_PULL_ACK:: Error UDP write");
@@ -937,8 +953,7 @@ int sendUdp(IPAddress server, int port, uint8_t *msg, int length) {
 
 	//send the update
 #if DUSB>=1
-	if (debug>=2) Serial.println(F("WiFi connected"));
-
+  if (debug>=2) Serial.println(F("WiFi connected"));
 #endif	
 	if (!Udp.beginPacket(server, (int) port)) {
 #if DUSB>=1
@@ -949,8 +964,11 @@ int sendUdp(IPAddress server, int port, uint8_t *msg, int length) {
 	
 	yield();
 	
-
-	if (Udp.write((char *)msg, length) != length) {
+#ifdef ESP32BUILD
+	if (Udp.write(msg, length) != length) {
+#else
+  if (Udp.write((char *)msg, length) != length) {
+#endif
 #if DUSB>=1
 		Serial.println(F("sendUdp:: Error write"));
 #endif
@@ -1226,9 +1244,17 @@ void setup() {
 	
 	// We start by connecting to a WiFi network, set hostname
 	char hostname[12];
+#ifdef ESP32BUILD
+  sprintf(hostname, "%s%02x%02x%02x", "esp32-", MAC_array[3], MAC_array[4], MAC_array[5]);
+#else
 	sprintf(hostname, "%s%02x%02x%02x", "esp8266-", MAC_array[3], MAC_array[4], MAC_array[5]);
+#endif
 
-	wifi_station_set_hostname( hostname );
+#ifdef ESP32BUILD
+  WiFi.setHostname(hostname);
+#else
+  wifi_station_set_hostname( hostname );
+#endif
 	
 	// Setup WiFi UDP connection. Give it some time and retry 50 times..
 	while (WlanConnect(50) < 0) {
@@ -1238,7 +1264,11 @@ void setup() {
 	}
 	
 	Serial.print(F("Host "));
-	Serial.print(wifi_station_get_hostname());
+#ifdef ESP32BUILD
+  Serial.print(WiFi.getHostname());
+#else
+  Serial.print(wifi_station_get_hostname());
+#endif
 	Serial.print(F(" WiFi Connected to "));
 	Serial.print(WiFi.SSID());
 	Serial.println();
@@ -1252,31 +1282,35 @@ void setup() {
 	delay(200);
 	
 	// Pins are defined and set in loraModem.h
-    pinMode(pins.ss, OUTPUT);
+  pinMode(pins.ss, OUTPUT);
 	pinMode(pins.rst, OUTPUT);
-    pinMode(pins.dio0, INPUT);								// This pin is interrupt
+  pinMode(pins.dio0, INPUT);								// This pin is interrupt
 	pinMode(pins.dio1, INPUT);								// This pin is interrupt
 	//pinMode(pins.dio2, INPUT);
 
 	// Init the SPI pins
+#ifdef ESP32BUILD
+  SPI.begin(SCK,MISO,MOSI,SS);
+#else
 	SPI.begin();
+#endif
 	
 	delay(500);
 	
 	// We choose the Gateway ID to be the Ethernet Address of our Gateway card
     // display results of getting hardware address
 	// 
-    Serial.print("Gateway ID: ");
+  Serial.print("Gateway ID: ");
 	printHexDigit(MAC_array[0]);
-    printHexDigit(MAC_array[1]);
-    printHexDigit(MAC_array[2]);
+  printHexDigit(MAC_array[1]);
+  printHexDigit(MAC_array[2]);
 	printHexDigit(0xFF);
 	printHexDigit(0xFF);
-    printHexDigit(MAC_array[3]);
-    printHexDigit(MAC_array[4]);
-    printHexDigit(MAC_array[5]);
+  printHexDigit(MAC_array[3]);
+  printHexDigit(MAC_array[4]);
+  printHexDigit(MAC_array[5]);
 
-    Serial.print(", Listening at SF");
+  Serial.print(", Listening at SF");
 	Serial.print(sf);
 	Serial.print(" on ");
 	Serial.print((double)freq/1000000);
@@ -1341,7 +1375,7 @@ void setup() {
 
 	delay(100);												// Wait after setup
 	
-	// Setup ad initialise LoRa state machine of _loramModem.ino
+	// Setup and initialise LoRa state machine of _loramModem.ino
 	_state = S_INIT;
 	initLoraModem();
 	

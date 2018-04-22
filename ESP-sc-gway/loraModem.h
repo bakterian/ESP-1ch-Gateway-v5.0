@@ -122,27 +122,21 @@ struct pins {
 	uint8_t rst=0;		// GPIO0 / D3. Reset pin not used	
 } pins;
 #elif _PIN_OUT==3
-// For ESP32 based board
-// SCK  == GPIO5/ PIN5
-// SS   == GPIO18/PIN18
-// MISO == GPIO19/ PIN19
-// MOSI == GPIO27/ PIN27
-// RST  == GPIO14/ PIN14
+// For ComResult gateway PCB use the following settings
 struct pins {
-	uint8_t dio0=26;		// GPIO26 / Dio0 used for one frequency and one SF
-	uint8_t dio1=26;		// GPIO26 / Used for CAD, may or not be shared with DIO0
-	uint8_t dio2=26;		// GPI26 / Used for frequency hopping, don't care
-	uint8_t ss=18;		// GPIO18 / Dx. Select pin connected to GPIO18
-	uint8_t rst=14;		// GPIO0 / D3. Reset pin not used	
-} pins;
-#elif _PIN_OUT==4
-// Custom Pin Setting, The GPIO0 (D3) sould remain un-used as
-struct pins {
-  uint8_t dio0=5;   // GPIO5 / D1. Dio0 used for one frequency and one SF
-  uint8_t dio1=4;   // GPIO4 / D2. Used for CAD, may or not be shared with DIO0
-  uint8_t dio2=2;   // GPIO2 / D4. Used for frequency hopping, don't care
-  uint8_t ss=15;    // GPIO15 / D8. Select pin connected to GPIO15
-  uint8_t rst=0;    // GPIO0 / D3. Reset pin not used 
+  uint8_t dio0=26;   // GPIO5 / D1. Dio0 used for one frequency and one SF
+  uint8_t dio1=33;   // GPIO4 / D2. Used for CAD, may or not be shared with DIO0
+  uint8_t dio2=32;   // GPIO0 / D3. Used for frequency hopping, don't care
+  uint8_t ss=18;    // GPIO15 / D8. Select pin connected to GPIO15
+  uint8_t rst=14;    // GPIO0 / D3. Reset pin not used 
+// Pin definetion of WIFI LoRa 32
+// HelTec AutoMation 2017 support@heltec.cn 
+#define SCK     5    // GPIO5  -- SX127x's SCK
+#define MISO    19   // GPIO19 -- SX127x's MISO
+#define MOSI    27   // GPIO27 -- SX127x's MOSI
+#define SS      18   // GPIO18 -- SX127x's CS
+#define RST     14   // GPIO14 -- SX127x's RESET
+#define DI00    26   // GPIO26 -- SX127x's IRQ(Interrupt Request)  
 } pins;
 #else
 	// Use your own pin definitions, and comment #error line below
@@ -150,7 +144,7 @@ struct pins {
 	// MOSI 13 / D7
 	// CLK  14 / D5
 	// SS   16 / D0
-#error "Pin Definitions _PIN_OUT must be 1(HALLARD) or 2 (COMRESULT)"
+#error "Pin Definitions _PIN_OUT must be 1(HALLARD ES8266) or 2 (COMRESULT ES8266) or 3 (HALTEC ESP32)"
 #endif
 
 // STATR contains the statictis that are kept by message. 
