@@ -1230,6 +1230,10 @@ void setup() {
 		yield();
 	}
 #endif
+
+// =============================================================================
+#if DATA_FOWARDING >= 1 /* Disable msg forwading just to check LoRa Reads */
+
 	WiFi.mode(WIFI_STA);
 	WlanReadWpa();								// Read the last Wifi settings from SPIFFS into memory
 
@@ -1280,7 +1284,19 @@ void setup() {
 		Serial.println(F("Error UDPconnect"));
 	}
 	delay(200);
-	
+
+#else 
+  readConfig( CONFIGFILE, &gwayConfig);
+  if (gwayConfig.sf != (uint8_t) 0) sf = (sf_t) gwayConfig.sf;
+  ifreq = gwayConfig.ch;
+  debug = gwayConfig.debug;
+  _cad = gwayConfig.cad;
+  _hop = gwayConfig.hop;
+  gwayConfig.boots++;             // Every boot of the system we increase the reset
+#endif /* DATA_FOWARDING */
+//============================================================================
+
+  
 	// Pins are defined and set in loraModem.h
   pinMode(pins.ss, OUTPUT);
 	pinMode(pins.rst, OUTPUT);
@@ -1296,7 +1312,8 @@ void setup() {
 #endif
 	
 	delay(500);
-	
+
+  
 	// We choose the Gateway ID to be the Ethernet Address of our Gateway card
     // display results of getting hardware address
 	// 
@@ -1315,6 +1332,9 @@ void setup() {
 	Serial.print(" on ");
 	Serial.print((double)freq/1000000);
 	Serial.println(" Mhz.");
+
+
+#if DATA_FOWARDING >= 1 /* Disable msg forwading just to check LoRa Reads */
 
 	if (!WiFi.hostByName(NTP_TIMESERVER, ntpServer))		// Get IP address of Timeserver
 	{
@@ -1362,11 +1382,15 @@ void setup() {
 	// When we are here we succeeded in getting the time
 	startTime = now();										// Time in seconds
 	Serial.print("Time: "); printTime();
-	Serial.println();
+	Serial.println(); 
 
 	writeGwayCfg(CONFIGFILE );
 	Serial.println(F("Gateway configuration saved"));
 #endif //NTP_INTR
+#else  /* DATA_FOWARDING*/
+  writeGwayCfg(CONFIGFILE );
+  Serial.println(F("Gateway configuration saved"));
+#endif /* DATA_FOWARDING*/
 
 #if A_SERVER==1	
 	// Setup the webserver
@@ -1401,10 +1425,15 @@ void setup() {
 		//SPI.usingInterrupt(digitalPinToInterrupt(pins.dio0));
 		//SPI.usingInterrupt(digitalPinToInterrupt(pins.dio1));
 		attachInterrupt(pins.dio0, Interrupt_0, RISING);	// Separate interrupts
-		attachInterrupt(pins.dio1, Interrupt_1, RISING);	// Separate interrupts		
+		attachInterrupt(pins.dio1, Interrupt_1, RISING);	// Separate interrupts		//XXX Turned off the attach interrupt
 	}
 	
 	writeConfig( CONFIGFILE, &gwayConfig);					// Write config
+
+_state = S_RX;
+rxLoraModem();
+writeRegister(REG_IRQ_FLAGS_MASK, (uint8_t) 0x00);
+writeRegister(REG_IRQ_FLAGS, 0xFF);       // Reset all interrupt flags
 
 	// activate OLED display
 #if OLED>=1
@@ -1445,7 +1474,8 @@ void loop ()
 	//while (_event != 0x00) {							// 
 		stateMachine();									// do the state machine
 	//}
-	
+
+  #if DATA_FOWARDING >= 1 /* Disable msg forwading just to check LoRa Reads */
 	// After a quiet period, make sure we reinit the modem and state machine.
 	// The interval is in seconds (about 10 seconds) as this re-init
 	// is a heavy operation. 
@@ -1476,6 +1506,7 @@ void loop ()
 		writeRegister(REG_IRQ_FLAGS, (uint8_t) 0xFF);			// Reset all interrupt flags
 		msgTime = nowSeconds;
 	}
+#endif
 
 #if A_SERVER==1
 	// Handle the Web server part of this sketch. Mainly used for administration 
@@ -1500,7 +1531,11 @@ void loop ()
 	// XXX 180326
 	if (_event == 1) return;
 	else yield();
-	
+
+
+// =====================================================================
+#if DATA_FOWARDING >= 1 /* Disable msg forwading just to check LoRa Reads */
+  
 	// If we are not connected, try to connect.
 	// We will not read Udp in this loop cycle then
 	if (WlanConnect(1) < 0) {
@@ -1510,7 +1545,8 @@ void loop ()
 			yield();
 			return;										// Exit loop if no WLAN connected
 	}
-	
+
+
 	// So if we are connected 
 	// Receive UDP PUSH_ACK messages from server. (*2, par. 3.3)
 	// This is important since the TTN broker will return confirmation
@@ -1535,13 +1571,12 @@ void loop ()
 				//_event=1;								// Could be done double if more messages received
 			}
 		}
-	}
-	
+	} 
 	yield();					// XXX 26/12/2017
+
 
 	// stat PUSH_DATA message (*2, par. 4)
 	//	
-
     if ((nowSeconds - statTime) >= _STAT_INTERVAL) {	// Wake up every xx seconds
 #if DUSB>=1
 		if (debug>=2) {
@@ -1577,21 +1612,21 @@ void loop ()
 #endif
 		statTime = nowSeconds;
     }
-	
 	yield();
 
 	
 	// send PULL_DATA message (*2, par. 4)
 	//
 	nowSeconds = now();
-    if ((nowSeconds - pulltime) >= _PULL_INTERVAL) {	// Wake up every xx seconds
+    if ((nowSeconds - pulltime) >= _PULL_INTERVAL) 
+    {	// Wake up every xx seconds
 #if DUSB>=1
 		if (debug>=1) {
 			Serial.print(F("PULL <"));
 			if (debug>=2) Serial.flush();
 		}
 #endif
-        pullData();										// Send PULL_DATA message to server
+    pullData();										  // Send PULL_DATA message to server
 		initLoraModem();								// XXX 180326, after adapting this function 
 		if (_cad) {
 #if DUSB>=1
@@ -1634,6 +1669,12 @@ void loop ()
 		ntptimer = nowSeconds;
 	}
 #endif
-	
 
+#else   /* DATA_FOWARDING */
+//_state = S_RX;
+//rxLoraModem();
+//writeRegister(REG_IRQ_FLAGS_MASK, (uint8_t) 0x00);
+//writeRegister(REG_IRQ_FLAGS, 0xFF);       // Reset all interrupt flags
+#endif /* DATA_FOWARDING */
+// =====================================================================
 }//loop

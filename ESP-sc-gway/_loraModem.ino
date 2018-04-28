@@ -860,7 +860,7 @@ void initLoraModem()
 	opmode(OPMODE_LORA);										// set register 0x01 to 0x80
 	
 	// 3. Set frequency based on value in freq
-	//ifreq = 0; 												// XXX 180326
+	ifreq = 1; 												// XXX 180326
 	freq=freqs[ifreq];
 	setFreq(freq);												// set to 868.1MHz or the last saved frequency
 	

@@ -571,7 +571,8 @@ int receivePacket()
 			// This is one of the potential problem areas.
 			// If possible, USB traffic should be left out of interrupt routines
 			// rxpk PUSH_DATA received from node is rxpk (*2, par. 3.2)
-#ifdef _TTNSERVER
+#if DATA_FOWARDING >= 1
+#ifdef _TTNSERVER 
 			if (!sendUdp(ttnServer, _TTNPORT, buff_up, build_index)) {
 				return(-1); 							// received a message
 			}
@@ -583,9 +584,11 @@ int receivePacket()
 				return(-2); 							// received a message
 			}
 #endif
+#endif /* DATA_FOWARDING */
+
 			return(build_index);
         }
-		
+
 	return(0);											// failure no message read
 	
 }//receivePacket

@@ -482,44 +482,43 @@ void stateMachine()
 	  //	Go back to SCAN
 	  //
 	  case S_RX:
-	
-		if (intr & IRQ_LORA_RXDONE_MASK) {
-		
-#if CRCCHECK==1
-			// We have to check for CRC error which will be visible AFTER RXDONE is set.
-			// CRC errors might indicate that the reception is not OK.
-			// Could be CRC error or message too large.
-			// CRC error checking requires DIO3
-			//
-			if (intr & IRQ_LORA_CRCERR_MASK) {
+
+
+       // We have to check for CRC error which will be visible AFTER RXDONE is set.
+      // CRC errors might indicate that the reception is not OK.
+      // Could be CRC error or message too large.
+      // CRC error checking requires DIO3
+      //
+      if (intr & IRQ_LORA_CRCERR_MASK) {
 #if DUSB>=1
-				if ((debug>=0)&&
-					(intr & IRQ_LORA_CRCERR_MASK)) {
-					Serial.println(F("Rx CRC err"));
-				}
+        if ((debug>=0)&&
+          (intr & IRQ_LORA_CRCERR_MASK)) {
+          Serial.println(F("Rx CRC err"));
+        }
 #endif
-				if (_cad) {
-					_state = S_SCAN;
-					cadScanner();
-				}
-				else {
-					_state = S_RX;
-					rxLoraModem();
-				}
+        if (_cad) {
+          _state = S_SCAN;
+          cadScanner();
+        }
+        else {
+          _state = S_RX;
+          rxLoraModem();
+        }
 
-				// Reset interrupts
-				_event=0;											// CRC error
-				writeRegister(REG_IRQ_FLAGS_MASK, (uint8_t) 0x00);	// Reset the interrupt mask
-				writeRegister(REG_IRQ_FLAGS, (uint8_t)(
-					IRQ_LORA_RXDONE_MASK | 
-					IRQ_LORA_RXTOUT_MASK | 
-					IRQ_LORA_HEADER_MASK | 
-					IRQ_LORA_CRCERR_MASK ));
+        // Reset interrupts
+        _event=0;                     // CRC error
+        writeRegister(REG_IRQ_FLAGS_MASK, (uint8_t) 0x00);  // Reset the interrupt mask
+        writeRegister(REG_IRQ_FLAGS, (uint8_t)(
+          IRQ_LORA_RXDONE_MASK | 
+          IRQ_LORA_RXTOUT_MASK | 
+          IRQ_LORA_HEADER_MASK | 
+          IRQ_LORA_CRCERR_MASK ));
 
-				break;
-			}// RX-CRC
-#endif // CRCCHECK
-			
+        break;
+      }// RX-CRC
+
+		if (intr & IRQ_LORA_RXDONE_MASK) 
+		{		     
 			// If we are here, no CRC error occurred, start timer
 #if DUSB>=1
 			unsigned long ffTime = micros();	
@@ -662,8 +661,7 @@ void stateMachine()
 		// therefore we wait. Make sure to clear the interrupt
 		// as HEADER interrupt comes just before RXDONE
 		else {
-			//writeRegister(REG_IRQ_FLAGS_MASK, (uint8_t) 0x00 );
-			//writeRegister(REG_IRQ_FLAGS, (uint8_t) 0xFF);
+
 			if (_hop) {
 				_event=1;
 			}
@@ -674,6 +672,8 @@ void stateMachine()
 				SerialStat(intr);
 			}
 #endif
+      writeRegister(REG_IRQ_FLAGS_MASK, (uint8_t) 0x00 );
+      writeRegister(REG_IRQ_FLAGS, (uint8_t) 0xFF);
 		}// int not RXDONE or RXTOUT
 
 	  break; // S_RX

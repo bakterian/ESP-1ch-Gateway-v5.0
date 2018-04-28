@@ -104,7 +104,6 @@ void SerialStat(uint8_t intr)
 #if DUSB>=1
 	if (debug>=0) {
 		Serial.print(F("I="));
-		//Serial.print(intr,HEX);
 
 		if (intr & IRQ_LORA_RXTOUT_MASK) Serial.print(F("RXTOUT"));		// 0x80
 		if (intr & IRQ_LORA_RXDONE_MASK) Serial.print(F("RXDONE"));		// 0x40
