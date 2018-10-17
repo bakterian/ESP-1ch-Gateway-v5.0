@@ -287,7 +287,7 @@ void setPow(uint8_t powe)
 
 
 // ----------------------------------------------------------------------------
-// Set the opmode to a value as defined on top
+// Set the opmode to a value as defined on topSX72_MODE_SLEEP
 // Values are 0x00 to 0x07
 // The value is set for the lowest 3 bits, the other bits are as before.
 // ----------------------------------------------------------------------------
@@ -714,17 +714,17 @@ void rxLoraModem()
 	// set frequency hopping
 	if (_hop) {
 		//writeRegister(REG_HOP_PERIOD, 0x01);					// 0x24, 0x01 was 0xFF
-		writeRegister(REG_HOP_PERIOD,0x00);						// 0x24, 0x00 was 0xFF
+		writeRegister(REG_HOP_PERIOD,0xFF);						// 0x24, 0x00 was 0xFF
 	}
 	else {
-		writeRegister(REG_HOP_PERIOD,0x00);						// 0x24, 0x00 was 0xFF
+		writeRegister(REG_HOP_PERIOD,0xFF);						// 0x24, 0x00 was 0xFF
 	}
-	// Set RXDONE interrupt to dio0
+	// Set RXDONE interrupt to dio0, adjusted to RPI config
 	writeRegister(REG_DIO_MAPPING_1, (uint8_t)(
 			MAP_DIO0_LORA_RXDONE | 
 			MAP_DIO1_LORA_RXTOUT |
 			MAP_DIO2_LORA_NOP |			
-			MAP_DIO3_LORA_CRC));
+			MAP_DIO3_LORA_CRC)); 
 
 	// Set the opmode to either single or continuous receive. The first is used when
 	// every message can come on a different SF, the second when we have fixed SF
@@ -777,7 +777,7 @@ void cadScanner()
 	setRate(sf, 0x04);
 	
 	// listen to LORA_MAC_PREAMBLE
-	writeRegister(REG_SYNC_WORD, (uint8_t) 0x34);				// set reg 0x39 to 0x34
+	writeRegister(REG_SYNC_WORD, (uint8_t) 0x12);				// set reg 0x39 to 0x12 - Private network, 0x34 - Public network
 	
 	// Set the interrupts we want top listen to
 	writeRegister(REG_DIO_MAPPING_1, (uint8_t)(
@@ -871,7 +871,7 @@ void initLoraModem()
     writeRegister(REG_LNA, (uint8_t) LNA_MAX_GAIN);  			// 0x0C, 0x23
 	
 	// 7. set sync word
-	writeRegister(REG_SYNC_WORD, (uint8_t) 0x34);				// set 0x39 to 0x34 LORA_MAC_PREAMBLE
+	writeRegister(REG_SYNC_WORD, (uint8_t) 0x12);				// set 0x39 to 0x12 - private newtork, 0x34 - public network
 	
 	// prevent node to node communication
 	writeRegister(REG_INVERTIQ,0x27);							// 0x33, 0x27; to reset from TX
@@ -885,7 +885,7 @@ void initLoraModem()
 	writeRegister(REG_HOP_PERIOD,0x00);							// reg 0x24, set to 0x00
 
 	// 5. Config PA Ramp up time								// set reg 0x0A  
-	writeRegister(REG_PARAMP, (readRegister(REG_PARAMP) & 0xF0) | 0x08); // set PA ramp-up time 50 uSec
+	writeRegister(REG_PARAMP, (readRegister(REG_PARAMP) & 0xF0) | 0x09); // set PA ramp-up time to 40 uSec was 50 uSec (0x08)
 	
 	// Set 0x4D PADAC for SX1276 ; XXX register is 0x5a for sx1272
 	writeRegister(REG_PADAC_SX1276,  0x84); 					// set 0x4D (PADAC) to 0x84
@@ -938,3 +938,27 @@ void ICACHE_RAM_ATTR Interrupt_2()
 }
 
 
+void dumpRegisters(Stream& out)
+{
+   out.println("RegAdress; Value");
+  for (int i = 0; i < 128; i++) {
+    out.print("0x");
+    out.print(i, HEX);
+    out.print(";0x");
+    out.println(readRegister(i), HEX);
+  }
+}
+
+void setLoraMode()
+{
+  uint8_t opMode = readRegister(REG_OPMODE);
+  opMode |= OPMODE_LORA;
+  writeRegister(REG_OPMODE, opMode);
+}
+
+void setFskMode()
+{
+  uint8_t opMode = readRegister(REG_OPMODE);
+  opMode &= ((uint8_t)OPMODE_LORA_OFF);
+  writeRegister(REG_OPMODE, opMode);
+}

@@ -293,6 +293,7 @@ struct LoraUp {
 // ----------------------------------------
 // LMIC Constants for radio registers
 #define OPMODE_LORA      			0x80
+#define OPMODE_LORA_OFF       0x7F
 #define OPMODE_MASK      			0x07
 #define OPMODE_SLEEP     			0x00
 #define OPMODE_STANDBY   			0x01

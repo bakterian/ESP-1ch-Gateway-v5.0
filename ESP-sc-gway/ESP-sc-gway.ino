@@ -1180,6 +1180,33 @@ void sendstat() {
 
 
 
+// ----------------------------------------------------------------------------
+// Dump all of the SX12.. registes
+// Parameters:
+//  - <none>
+// ----------------------------------------------------------------------------
+void dumpLoraFskRegsToSerial()
+{
+    opmode(OPMODE_LORA);
+    for(int i = 0; i < 2; ++i) 
+    {
+      if( i == 0 ) 
+      {
+        Serial.println("### Dumping Registy in LoRa Mode ###");
+        setLoraMode();
+      }
+      else 
+      {
+        Serial.println("### Dumping Registy in FSK Mode ###");
+        setFskMode();
+      }
+      dumpRegisters(Serial);
+      Serial.println("#############################################################\n");
+    }
+}
+
+
+
 // ============================================================================
 // MAIN PROGRAM CODE (SETUP AND LOOP)
 
@@ -1193,13 +1220,11 @@ void setup() {
 	char MAC_char[19];								// XXX Unbelievable
 	MAC_char[18] = 0;
 	
-	
-	
 	Serial.begin(_BAUDRATE);						// As fast as possible for bus
 	delay(100);
 	Serial.flush();
 	delay(500);
-
+  
 	if (SPIFFS.begin()) {
 		Serial.println(F("SPIFFS init success"));
 	}
@@ -1436,11 +1461,15 @@ writeRegister(REG_IRQ_FLAGS_MASK, (uint8_t) 0x00);
 writeRegister(REG_IRQ_FLAGS, 0xFF);       // Reset all interrupt flags
 
 	// activate OLED display
-#if OLED>=1
+  #if OLED>=1
 	acti_oLED();
 	addr_oLED();
-#endif
+  #endif
 
+  #if DUMP_REGS>=1
+  dumpLoraFskRegsToSerial();
+  #endif
+  
 	Serial.println(F("--------------------------------------"));
 }//setup
 

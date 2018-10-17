@@ -69,7 +69,7 @@
 // Definitions for the admin webserver.
 // A_SERVER determines whether or not the admin webpage is included in the sketch.
 // Normally, leave it in!
-#define A_SERVER 0        // Define local WebServer only if this define is set
+#define A_SERVER 1        // Define local WebServer only if this define is set
 #define A_REFRESH 1				// Will the webserver refresh or not?
 #define A_SERVERPORT 80			// local webserver port
 #define A_MAXBUFSIZE 192		// Must be larger than 128, but small enough to work
@@ -151,6 +151,9 @@
 // Will we use Mutex or not?
 // +SPI is input for SPI, SPO is output for SPI
 #define MUTEX 0
+
+// Will dump the SX12.. register on serial in csv format for diagnostics
+#define DUMP_REGS 0
 
 // Define if OLED Display is connected to I2C bus. Note that defining an OLED display does not
 // impact perfoamce very much, certainly if no OLED is connected. Wrong OLED will not show
@@ -262,11 +265,11 @@ wpas wpa[] = {
 };
 #else
 // Place outside version control to avoid the risk of commiting it to github ;-)
-#include "D:\7_ARDUINO_SKETCHES\0_ESP32WiFiCredentials\wpa.h"
+#include "D:\5_GITHUB\0_CONFIG\wpa.h"
 #endif
 
 
-#define DATA_FOWARDING   0
+#define DATA_FOWARDING   1
 
 // For asserting and testing the following defines are used.
 //
